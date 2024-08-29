@@ -9,6 +9,10 @@
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
+(use-package! projectile
+  :config
+  (setq projectile-project-search-path '("~/Projects")))
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
 ;; - `doom-font' -- the primary font to use
@@ -101,6 +105,11 @@
                                                          :dialyzerEnabled
                                                          :json-false))))
                                           (lsp--set-configuration config)))))))
+;; lsp-treemacs integration
+(use-package! lsp-treemacs
+  :commands lsp-treemacs-errors-list
+  :config
+  (lsp-treemacs-sync-mode 1))
 
 ;; ;;; Package: lsp-ui
 ;; ;; Enhancements for lsp-mode with additional UI features
@@ -174,11 +183,6 @@
 ;; Configure default frame dimensions
 (add-to-list 'default-frame-alist '(width . 180))
 (add-to-list 'default-frame-alist '(height . 60))
-
-;; Projectile configuration
-(use-package! projectile
-  :config
-  (setq projectile-project-search-path '("~/Projects")))
 
 ;; Custom functions
 (defun elixir-append-dbg()
@@ -380,3 +384,16 @@
 
 (global-set-key (kbd "C-c r u") 'org-roam-ui-open)
 
+;;; Text wrapping
+;; Set fill-column to a reasonable value
+(setq-default fill-column 80)
+
+;; Enable auto-fill-mode to automatically wrap text at `fill-column`
+(add-hook 'text-mode-hook #'auto-fill-mode)
+
+;; Enable visual line mode for visual line wrapping
+(global-visual-line-mode 1)
+
+;; MacOS config
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))

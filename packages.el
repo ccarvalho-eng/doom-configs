@@ -8,6 +8,7 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;; (package! some-package)
+(package! exec-path-from-shell)
 (package! lsp-origami)
 (package! catppuccin-theme)
 
