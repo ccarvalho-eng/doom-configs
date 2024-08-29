@@ -379,3 +379,4 @@
       :desc "Yearly journal entry" "n j y" #'org-journal-yearly-entry)
 
 (global-set-key (kbd "C-c r u") 'org-roam-ui-open)
+
