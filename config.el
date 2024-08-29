@@ -397,3 +397,6 @@
 ;; MacOS config
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
+
+;; Line numbers
+(setq display-line-numbers-type 'relative)
