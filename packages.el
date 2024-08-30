@@ -11,6 +11,8 @@
 (package! exec-path-from-shell)
 (package! lsp-origami)
 (package! lsp-ui)
+(package! imenu-list)
+(package! imenu-anywhere)
 (package! catppuccin-theme)
 (package! org-roam-ui)
 

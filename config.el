@@ -100,7 +100,6 @@
 (use-package! lsp-ui
   :commands (lsp-ui-mode lsp-ui-imenu)
   :config
-  ;; Configure UI options for lsp-ui
   (setq lsp-ui-doc-max-height 20
         lsp-ui-doc-max-width 80
         lsp-ui-sideline-ignore-duplicate t
@@ -111,7 +110,18 @@
         lsp-ui-flycheck-enable t
         lsp-ui-imenu-kind-position 'left
         lsp-ui-sideline-code-actions-prefix "💡"
-        company-lsp-match-candidate-predicate #'company-lsp-match-candidate-prefix))
+        lsp-ui-imenu-enable t
+        lsp-ui-imenu-auto-refresh t
+        lsp-ui-imenu-kind-tooltip t))
+
+;; Optional: Additional packages for enhanced imenu functionality
+(use-package! imenu-list
+  :commands imenu-list
+  :config
+  (setq imenu-list-position 'left))
+
+(use-package! imenu-anywhere
+  :commands imenu-anywhere)
 
 ;;; Package: lsp-elixir
 ;; Elixir-specific LSP support
