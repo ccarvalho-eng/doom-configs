@@ -10,7 +10,9 @@
 ;;;; Project Management
 (use-package! projectile
   :config
-  (setq projectile-project-search-path '("~/Projects")))
+  (setq projectile-project-search-path '("~/Projects")
+        projectile-indexing-method 'hybrid
+        projectile-enable-caching t))
 
 ;;;; UI Configuration
 
@@ -298,3 +300,60 @@
 
 ;; Org-roam-ui keybinding
 (global-set-key (kbd "C-c r u") 'org-roam-ui-open)
+
+;;; Company (autocompletion)
+(after! company
+  (setq company-idle-delay 0.1
+        company-minimum-prefix-length 1)
+  (add-hook 'after-init-hook 'global-company-mode))
+
+;;; Flycheck (syntax checking)
+(after! flycheck
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)
+        flycheck-idle-change-delay 0.1))
+
+;;; Which-key (key binding hints)
+(after! which-key
+  (setq which-key-idle-delay 0.5
+        which-key-idle-secondary-delay 0.05))
+
+;;; Dired (file management)
+(after! dired
+  (setq dired-dwim-target t))
+
+;;; Rainbow delimiters (colorize nested parentheses)
+(use-package! rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+;;; Language-specific configurations
+
+;; Python
+(after! python
+  (setq python-shell-interpreter "python3"))
+
+;; JavaScript/TypeScript
+(after! typescript-mode
+  (setq typescript-indent-level 2))
+
+;; Web-mode
+(after! web-mode
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2))
+
+;; YAML
+(use-package! yaml-mode
+  :mode "\\.ya?ml\\'")
+
+;;; Performance tweaks
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024))
+
+;;; Miscellaneous
+(setq auto-save-timeout 15
+      make-backup-files nil
+      create-lockfiles nil)
+
+(global-auto-revert-mode t)
+(delete-selection-mode t)
+(global-subword-mode t)
