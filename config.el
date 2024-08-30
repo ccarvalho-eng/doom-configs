@@ -333,10 +333,6 @@
 
 ;;; Language-specific configurations
 
-;; Python
-(after! python
-  (setq python-shell-interpreter "python3"))
-
 ;; JavaScript/TypeScript
 (after! typescript-mode
   (setq typescript-indent-level 2))
