@@ -114,7 +114,7 @@
         lsp-ui-imenu-auto-refresh t
         lsp-ui-imenu-kind-tooltip t))
 
-;; Optional: Additional packages for enhanced imenu functionality
+;; Additional packages for enhanced imenu functionality
 (use-package! imenu-list
   :commands imenu-list
   :config
