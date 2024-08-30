@@ -165,28 +165,25 @@
   "Find all .org files recursively within DIRECTORY."
   (directory-files-recursively directory "\\.org$"))
 
-(setq org-agenda-files
-      (append
-       (find-org-files-recursively my-org-directory)))
-
-;; Journal functions
-(defun org-journal-update-agenda-files ()
-  "Update `org-agenda-files` to include all org files in the journal directory."
+(defun update-org-agenda-files ()
+  "Update org-agenda-files with all .org files in org and journal directories."
+  (interactive)
   (setq org-agenda-files
         (append
          (find-org-files-recursively my-org-directory))))
 
-(defun org-journal-reload-agenda ()
-  "Reload the org agenda buffer to reflect any changes."
-  (when (get-buffer "*Org Agenda*")
-    (with-current-buffer "*Org Agenda*"
-      (org-agenda-redo))))
+;; Initialize org-agenda-files
+(update-org-agenda-files)
 
-(defun org-journal-load-template (type)
-  "Load a template for the journal entry of TYPE."
-  (let ((template-file (concat my-templates-directory type ".org")))
-    (when (file-exists-p template-file)
-      (insert-file-contents template-file))))
+;; Automatically update org-agenda-files every 5 minutes
+(run-with-timer 0 300 'update-org-agenda-files)
+
+;; Journal functions
+(defun org-journal-refresh-agenda-list ()
+  "Refresh the org-agenda-files list and reload the agenda."
+  (interactive)
+  (update-org-agenda-files)
+  (org-agenda-redo-all))
 
 (defun org-journal-create-entry (period)
   "Create a new journal entry for the given PERIOD."
@@ -212,8 +209,17 @@
           org-journal-date-format (alist-get 'date-format config))
     (org-journal-new-entry nil)
     (org-journal-load-template (symbol-name period))
-    (org-journal-update-agenda-files)
-    (org-journal-reload-agenda)))
+    (org-journal-refresh-agenda-list)))
+
+;; Add a hook to refresh agenda files after saving an org file
+(add-hook 'after-save-hook
+          (lambda ()
+            (when (eq major-mode 'org-mode)
+              (org-journal-refresh-agenda-list))))
+
+;; Keybinding to manually refresh agenda files
+(map! :leader
+      :desc "Refresh org agenda files" "o a r" #'org-journal-refresh-agenda-list)
 
 (defun org-journal-daily-entry ()
   "Create a new daily journal entry."
