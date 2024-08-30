@@ -1,102 +1,59 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
+;;;; Basic Configuration
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
+;;;; Project Management
 (use-package! projectile
   :config
   (setq projectile-project-search-path '("~/Projects")))
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom:
-;;
-;; - `doom-font' -- the primary font to use
-;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;; - `doom-symbol-font' -- for symbols
-;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;;
-;; See 'C-h v doom-font' for documentation and more examples of what they
-;; accept. For example:
-;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
-;;
-;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
-;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
-;; refresh your font settings. If Emacs still can't find your font, it likely
-;; wasn't installed correctly. Font issues are rarely Doom issues!
+;;;; UI Configuration
 
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
+;; Theme
 (setq doom-theme 'catppuccin)
 (setq catppuccin-flavor 'frappe)
 
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+;; Font
+(setq doom-font (font-spec :family "MonacoB2" :size 11))
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+;; Italic comments and documentation
+(custom-set-faces!
+  `(font-lock-comment-face :slant italic)
+  `(font-lock-doc-face :slant italic))
 
+;; Line numbers
+(setq display-line-numbers-type 'relative)
 
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
-;;
-;;   (after! PACKAGE
-;;     (setq x y))
-;;
-;; The exceptions to this rule:
-;;
-;;   - Setting file/directory variables (like `org-directory')
-;;   - Setting variables which explicitly tell you to set them before their
-;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
-;;   - Setting doom variables (which start with 'doom-' or '+').
-;;
-;; Here are some additional functions/macros that will help you configure Doom.
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
-;; etc).
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
+;; Default frame size
+(add-to-list 'default-frame-alist '(width . 180))
+(add-to-list 'default-frame-alist '(height . 60))
 
-;; Emacs Configuration for LSP and Related Packages
+;;;; LSP Configuration
 
-;; lsp-treemacs integration
-(use-package! lsp-treemacs
-  :commands lsp-treemacs-errors-list
+(use-package! lsp-mode
+  :ensure t
+  :hook (elixir-ts-mode . lsp)
+  :commands lsp
   :config
-  (lsp-treemacs-sync-mode 1))
-
-(after! lsp-mode
   (lsp-register-client
    (make-lsp-client :new-connection (lsp-stdio-connection '("nextls" "--stdio"))
                     :multi-root t
                     :activation-fn (lsp-activate-on "elixir")
-                    :server-id 'next-ls)))
+                    :server-id 'next-ls))
+  ;; Ignore directories for file watchers
+  (dolist (match '("[/\\\\].direnv$"
+                   "[/\\\\]node_modules$"
+                   "[/\\\\]deps"
+                   "[/\\\\]priv"
+                   "[/\\\\]build"
+                   "[/\\\\]_build"))
+    (add-to-list 'lsp-file-watch-ignored match)))
 
-;; ;;; Package: lsp-ui
-;; ;; Enhancements for lsp-mode with additional UI features
 (use-package! lsp-ui
   :commands (lsp-ui-mode lsp-ui-imenu)
   :config
@@ -114,65 +71,16 @@
         lsp-ui-imenu-auto-refresh t
         lsp-ui-imenu-kind-tooltip t))
 
-;; Additional packages for enhanced imenu functionality
-(use-package! imenu-list
-  :commands imenu-list
-  :config
-  (setq imenu-list-position 'left))
-
-(use-package! imenu-anywhere
-  :commands imenu-anywhere)
-
-;;; Package: lsp-elixir
-;; Elixir-specific LSP support
-(use-package lsp-mode
-  :ensure t
-  :hook (elixir-ts-mode . lsp)
-  :commands lsp)
-
-;; Folding configuration
-(setq lsp-enable-folding t)
-(use-package! lsp-origami)
-(add-hook! 'lsp-after-open-hook #'lsp-origami-try-enable)
-
-;;; Package: lsp-treemacs
-;; Integrates LSP with Treemacs for displaying errors and symbols
 (use-package! lsp-treemacs
   :commands lsp-treemacs-errors-list
   :config
-  ;; Enable sync mode for Treemacs with LSP
   (lsp-treemacs-sync-mode 1))
 
-;;; LSP Mode - Additional Configuration
-(after! lsp-mode
-  ;; Add directories to be ignored by LSP file watchers
-  (dolist (match '("[/\\\\].direnv$"
-                   "[/\\\\]node_modules$"
-                   "[/\\\\]deps"
-                   "[/\\\\]priv"
-                   "[/\\\\]build"
-                   "[/\\\\]_build"))
-    (add-to-list 'lsp-file-watch-ignored match)))
+;;;; Elixir Configuration
 
-;;; Package: exunit
-;; Emacs support for Elixir ExUnit
 (use-package! exunit)
 
-;;; UI Configuration
-;; Set default font
-(setq doom-font (font-spec :family "MonacoB2" :size 11))
-
-;; Set faces for comments and documentation to italic
-(custom-set-faces!
-  `(font-lock-comment-face :slant italic)
-  `(font-lock-doc-face :slant italic))
-
-;;; Default Frame Size
-;; Configure default frame dimensions
-(add-to-list 'default-frame-alist '(width . 180))
-(add-to-list 'default-frame-alist '(height . 60))
-
-;; Custom functions
+;; Custom Elixir functions
 (defun elixir-append-dbg()
   (interactive)
   (evil-append-line nil)
@@ -228,142 +136,109 @@
       :desc "mix ecto.migrate" :nve "meM" #'elixir-mix-ecto-migrate
       :desc "mix ecto.rollback" :nve "meR" #'elixir-mix-ecto-rollback)
 
-;; Multiple cursors keybindings
-(map! :leader
-      (:prefix "m"
-       :desc "Edit lines" "l" #'mc/edit-lines
-       :desc "Add cursor to all" "a" #'mc/mark-all-like-this
-       :desc "Mark all in region" "r" #'mc/mark-all-in-region))
+;;;; Org Mode Configuration
 
-;;; Org configuration
-
-;; Define a variable to store the directory path for org-mode files
+;; Define directory paths
 (defvar my-org-directory "~/Library/Mobile Documents/com~apple~CloudDocs/org-notes/"
   "The directory where I store my org files.")
-
-;; Define a variable to store the directory path for the journal files
 (defvar my-journal-directory (concat my-org-directory "journal/")
   "The directory where I store my journal files.")
-
-;; Define a variable to store the directory path for the templates
 (defvar my-templates-directory (concat my-org-directory "templates/")
   "The directory where I store my templates.")
 
-;; Set the date format for org-journal entries
-(setq org-journal-date-format "%a %e %b, %Y")
-
-;; Set the default org directory
+;; Set org-related directories
 (setq org-directory my-org-directory)
-
-;; Set the org-journal directory to the journal directory
-(after! org-journal
-  (setq org-journal-dir my-journal-directory))
-
-;; Set the default notes file to the journal directory
 (setq org-default-notes-file my-org-directory)
+(setq org-roam-directory (concat my-org-directory "train-of-thought"))
 
-;; Define a function to recursively find org files in a directory
+;; Journal configuration
+(after! org-journal
+  (setq org-journal-dir my-journal-directory
+        org-journal-date-format "%a %e %b, %Y"))
+
+;; Agenda configuration
+(setq org-agenda-include-diary t)
+
 (defun find-org-files-recursively (directory)
   "Find all .org files recursively within DIRECTORY."
   (directory-files-recursively directory "\\.org$"))
 
-;; Set the agenda files to include both org and journal directories and subdirectories
 (setq org-agenda-files
       (append
        (find-org-files-recursively my-org-directory)))
 
-(setq org-roam-directory (concat my-org-directory "train-of-thought"))
-
-;; Include org agenda diary
-(setq org-agenda-include-diary t)
-
-;; Update org-agenda-files with new journal entries
+;; Journal functions
 (defun org-journal-update-agenda-files ()
   "Update `org-agenda-files` to include all org files in the journal directory."
   (setq org-agenda-files
         (append
          (find-org-files-recursively my-org-directory))))
 
-;; Reload the org agenda buffer
 (defun org-journal-reload-agenda ()
   "Reload the org agenda buffer to reflect any changes."
   (when (get-buffer "*Org Agenda*")
     (with-current-buffer "*Org Agenda*"
       (org-agenda-redo))))
 
-;; Create a daily journal entry and update agenda
-(defun org-journal-daily-entry ()
-  "Create a new daily journal entry."
-  (interactive)
-  (setq org-journal-dir (concat my-journal-directory "daily/"))
-  (setq org-journal-date-format "%a %e %b, %Y")
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  (setq org-journal-file-type 'daily)
-  (org-journal-new-entry nil)
-  (org-journal-load-template "daily")
-  (org-journal-update-agenda-files)
-  (org-journal-reload-agenda))
-
-;; Create a weekly journal entry and update agenda
-(defun org-journal-weekly-entry ()
-  "Create a new weekly journal entry."
-  (interactive)
-  (setq org-journal-dir (concat my-journal-directory "weekly/"))
-  (setq org-journal-date-format "Week %V, %Y")
-  (setq org-journal-file-format "%Y-W%V.org")
-  (setq org-journal-file-type 'weekly)
-  (org-journal-new-entry nil)
-  (org-journal-load-template "weekly")
-  (org-journal-update-agenda-files)
-  (org-journal-reload-agenda))
-
-;; Create a monthly journal entry and update agenda
-(defun org-journal-monthly-entry ()
-  "Create a new monthly journal entry."
-  (interactive)
-  (setq org-journal-dir (concat my-journal-directory "monthly/"))
-  (setq org-journal-date-format "%B %Y")
-  (setq org-journal-file-format "%Y-%m.org")
-  (setq org-journal-file-type 'monthly)
-  (org-journal-new-entry nil)
-  (org-journal-load-template "monthly")
-  (org-journal-update-agenda-files)
-  (org-journal-reload-agenda))
-
-;; Create a quarterly journal entry and update agenda
-(defun org-journal-quarterly-entry ()
-  "Create a new quarterly journal entry."
-  (interactive)
-  (setq org-journal-dir (concat my-journal-directory "quarterly/"))
-  (setq org-journal-date-format "Quarter %q, %Y")
-  (setq org-journal-file-format "%Y-Q%q.org")
-  (setq org-journal-file-type 'quarterly)
-  (org-journal-new-entry nil)
-  (org-journal-load-template "quarterly")
-  (org-journal-update-agenda-files)
-  (org-journal-reload-agenda))
-
-;; Create a yearly journal entry and update agenda
-(defun org-journal-yearly-entry ()
-  "Create a new yearly journal entry."
-  (interactive)
-  (setq org-journal-dir (concat my-journal-directory "yearly/"))
-  (setq org-journal-date-format "%Y")
-  (setq org-journal-file-format "%Y.org")
-  (setq org-journal-file-type 'yearly)
-  (org-journal-new-entry nil)
-  (org-journal-load-template "yearly")
-  (org-journal-update-agenda-files)
-  (org-journal-reload-agenda))
-
-;; Load a template for the journal entry of the given type
 (defun org-journal-load-template (type)
   "Load a template for the journal entry of TYPE."
   (let ((template-file (concat my-templates-directory type ".org")))
     (when (file-exists-p template-file)
       (insert-file-contents template-file))))
 
-;; Keybindings for journal entries
+(defun org-journal-create-entry (period)
+  "Create a new journal entry for the given PERIOD."
+  (let* ((config (cdr (assoc period
+                             '((daily . ((dir . "daily")
+                                         (format . "%Y-%m-%d.org")
+                                         (date-format . "%a %e %b, %Y")))
+                               (weekly . ((dir . "weekly")
+                                          (format . "%Y-W%V.org")
+                                          (date-format . "Week %V, %Y")))
+                               (monthly . ((dir . "monthly")
+                                           (format . "%Y-%m.org")
+                                           (date-format . "%B %Y")))
+                               (quarterly . ((dir . "quarterly")
+                                             (format . "%Y-Q%q.org")
+                                             (date-format . "Quarter %q, %Y")))
+                               (yearly . ((dir . "yearly")
+                                          (format . "%Y.org")
+                                          (date-format . "%Y")))))))
+         (dir (concat my-journal-directory (alist-get 'dir config))))
+    (setq org-journal-dir dir
+          org-journal-file-format (alist-get 'format config)
+          org-journal-date-format (alist-get 'date-format config))
+    (org-journal-new-entry nil)
+    (org-journal-load-template (symbol-name period))
+    (org-journal-update-agenda-files)
+    (org-journal-reload-agenda)))
+
+(defun org-journal-daily-entry ()
+  "Create a new daily journal entry."
+  (interactive)
+  (org-journal-create-entry 'daily))
+
+(defun org-journal-weekly-entry ()
+  "Create a new weekly journal entry."
+  (interactive)
+  (org-journal-create-entry 'weekly))
+
+(defun org-journal-monthly-entry ()
+  "Create a new monthly journal entry."
+  (interactive)
+  (org-journal-create-entry 'monthly))
+
+(defun org-journal-quarterly-entry ()
+  "Create a new quarterly journal entry."
+  (interactive)
+  (org-journal-create-entry 'quarterly))
+
+(defun org-journal-yearly-entry ()
+  "Create a new yearly journal entry."
+  (interactive)
+  (org-journal-create-entry 'yearly))
+
+;; Journal keybindings
 (map! :leader
       :desc "Daily journal entry" "n j d" #'org-journal-daily-entry
       :desc "Weekly journal entry" "n j w" #'org-journal-weekly-entry
@@ -371,40 +246,55 @@
       :desc "Quarterly journal entry" "n j q" #'org-journal-quarterly-entry
       :desc "Yearly journal entry" "n j y" #'org-journal-yearly-entry)
 
-(global-set-key (kbd "C-c r u") 'org-roam-ui-open)
-
-;;; Custom Face Settings
-;; Customize org-mode heading sizes
+;; Org UI customization
 (custom-set-faces!
   '(org-level-1 :height 1.0)
   '(org-level-2 :height 0.95)
   '(org-level-3 :height 0.9))
 
-;; Enable clocking and store clock data in the LOGBOOK drawer
-(setq org-clock-into-drawer "LOGBOOK")
+;; Org clock and logging configuration
+(setq org-clock-into-drawer "LOGBOOK"
+      org-log-done 'time
+      org-log-into-drawer t
+      org-log-reschedule 'note
+      org-log-redeadline 'note
+      org-log-state-notes-into-drawer t)
 
-;; Log task state changes with a timestamp and note
-(setq org-log-done 'time)  ; Add a timestamp when a task is marked DONE
-(setq org-log-into-drawer t)  ; Always use the LOGBOOK drawer for notes
+;;;; Text Wrapping
 
-;; Log all state changes with a note
-(setq org-log-reschedule 'note) ; Prompt for a note when a task is rescheduled
-(setq org-log-redeadline 'note) ; Prompt for a note when a task's deadline is changed
-(setq org-log-state-notes-into-drawer t) ; Store state change notes in a drawer
-
-;;; Text wrapping
-;; Set fill-column to a reasonable value
 (setq-default fill-column 80)
-
-;; Enable auto-fill-mode to automatically wrap text at `fill-column`
 (add-hook 'text-mode-hook #'auto-fill-mode)
-
-;; Enable visual line mode for visual line wrapping
 (global-visual-line-mode 1)
 
-;; MacOS config
+;;;; MacOS Configuration
+
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
-;; Line numbers
-(setq display-line-numbers-type 'relative)
+;;;; Additional Packages
+
+(use-package! imenu-list
+  :commands imenu-list
+  :config
+  (setq imenu-list-position 'left))
+
+(use-package! imenu-anywhere
+  :commands imenu-anywhere)
+
+(use-package! lsp-origami
+  :after lsp-mode
+  :config
+  (setq lsp-enable-folding t)
+  (add-hook! 'lsp-after-open-hook #'lsp-origami-try-enable))
+
+;;;; Miscellaneous
+
+;; Multiple cursors keybindings
+(map! :leader
+      (:prefix "m"
+       :desc "Edit lines" "l" #'mc/edit-lines
+       :desc "Add cursor to all" "a" #'mc/mark-all-like-this
+       :desc "Mark all in region" "r" #'mc/mark-all-in-region))
+
+;; Org-roam-ui keybinding
+(global-set-key (kbd "C-c r u") 'org-roam-ui-open)
