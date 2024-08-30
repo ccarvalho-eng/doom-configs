@@ -95,7 +95,7 @@
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        lookup              ; navigate your code and its documentation
-       lsp                 ; M-x vscode
+       (lsp +eglot)        ; M-x vscode
        magit               ; a git porcelain for Emacs
        ;;make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
@@ -176,7 +176,7 @@
        ;;terra             ; Earth and Moon in alignment for performance.
        web                 ; the tubes
        (yaml +lsp)         ; JSON, but readable
-       ;;zig               ; C, but simpler
+       zig                 ; C, but simpler
 
        :email
        ;;(mu4e +org +gmail)

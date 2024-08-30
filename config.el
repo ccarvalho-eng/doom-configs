@@ -82,39 +82,23 @@
 
 ;; Emacs Configuration for LSP and Related Packages
 
-;;; Package: lsp-mode
-;; Configuration for Language Server Protocol support in Emacs
-(use-package! lsp-mode
-  :commands lsp
-  :init
-  (setq lsp-keymap-prefix "C-c l") ; Set prefix for lsp-command-keymap
-  :config
-  ;; Elixir LSP
-  (lsp-register-client
-   (make-lsp-client :new-connection
-                    (lsp-stdio-connection
-                     (expand-file-name
-                      "~/.elixir-ls/release/language_server.sh"))
-                    :major-modes '(elixir-mode)
-                    :priority -1
-                    :server-id 'elixir-ls
-                    :initialized-fn (lambda (workspace)
-                                      (with-lsp-workspace workspace
-                                        (let ((config `(:elixirLS
-                                                        (:mixEnv "dev"
-                                                         :dialyzerEnabled
-                                                         :json-false))))
-                                          (lsp--set-configuration config)))))))
 ;; lsp-treemacs integration
 (use-package! lsp-treemacs
   :commands lsp-treemacs-errors-list
   :config
   (lsp-treemacs-sync-mode 1))
 
+(after! lsp-mode
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("nextls" "--stdio"))
+                    :multi-root t
+                    :activation-fn (lsp-activate-on "elixir")
+                    :server-id 'next-ls)))
+
 ;; ;;; Package: lsp-ui
 ;; ;; Enhancements for lsp-mode with additional UI features
 (use-package! lsp-ui
-  :commands lsp-ui-mode
+  :commands (lsp-ui-mode lsp-ui-imenu)
   :config
   ;; Configure UI options for lsp-ui
   (setq lsp-ui-doc-max-height 20
@@ -131,9 +115,10 @@
 
 ;;; Package: lsp-elixir
 ;; Elixir-specific LSP support
-(use-package! lsp-elixir
-  :defer t
-  :hook (elixir-mode . lsp))
+(use-package lsp-mode
+  :ensure t
+  :hook (elixir-ts-mode . lsp)
+  :commands lsp)
 
 ;; Folding configuration
 (setq lsp-enable-folding t)
@@ -227,7 +212,7 @@
     (compile "mix ecto.rollback")))
 
 ;; Elixir keybindings
-(map! :mode elixir-mode
+(map! :mode elixir-ts-mode
       :leader
       :desc "Sort Lines" :nve "l" #'sort-lines
       :desc "iMenu" :nve "c/" #'lsp-ui-imenu

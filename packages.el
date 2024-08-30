@@ -10,6 +10,7 @@
 ;; (package! some-package)
 (package! exec-path-from-shell)
 (package! lsp-origami)
+(package! lsp-ui)
 (package! catppuccin-theme)
 (package! org-roam-ui)
 
