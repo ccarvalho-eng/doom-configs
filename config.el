@@ -162,13 +162,6 @@
 ;; Set default font
 (setq doom-font (font-spec :family "MonacoB2" :size 11))
 
-;;; Custom Face Settings
-;; Customize org-mode heading sizes
-(custom-set-faces!
-  '(org-level-1 :height 1.0)
-  '(org-level-2 :height 0.95)
-  '(org-level-3 :height 0.9))
-
 ;; Set faces for comments and documentation to italic
 (custom-set-faces!
   `(font-lock-comment-face :slant italic)
@@ -243,6 +236,7 @@
        :desc "Mark all in region" "r" #'mc/mark-all-in-region))
 
 ;;; Org configuration
+
 ;; Define a variable to store the directory path for org-mode files
 (defvar my-org-directory "~/Library/Mobile Documents/com~apple~CloudDocs/org-notes/"
   "The directory where I store my org files.")
@@ -378,6 +372,23 @@
       :desc "Yearly journal entry" "n j y" #'org-journal-yearly-entry)
 
 (global-set-key (kbd "C-c r u") 'org-roam-ui-open)
+
+;;; Custom Face Settings
+;; Customize org-mode heading sizes
+(custom-set-faces!
+  '(org-level-1 :height 1.0)
+  '(org-level-2 :height 0.95)
+  '(org-level-3 :height 0.9))
+
+;; Log task state changes with a timestamp and note
+(setq org-log-done 'time)  ; Add a timestamp when a task is marked DONE
+(setq org-log-into-drawer t)  ; Always use the LOGBOOK drawer for notes
+
+;; Log all state changes with a note
+(setq org-log-done 'note)  ; Prompt for a note when a task is marked DONE
+(setq org-log-reschedule 'note) ; Prompt for a note when a task is rescheduled
+(setq org-log-redeadline 'note) ; Prompt for a note when a task's deadline is changed
+(setq org-log-state-notes-into-drawer t) ; Store state change notes in a drawer
 
 ;;; Text wrapping
 ;; Set fill-column to a reasonable value
