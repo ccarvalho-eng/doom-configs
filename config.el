@@ -129,7 +129,7 @@
       :leader
       :desc "Sort Lines" :nve "l" #'sort-lines
       :desc "iMenu" :nve "c/" #'lsp-ui-imenu
-      :desc "dbg/0" :nve "cI" #'elixir-append-dbg
+      :desc "dbg/1" :nve "cI" #'elixir-append-dbg
       :desc "mix credo" :nve "mc" #'elixir-mix-credo
       :desc "mix dialyzer" :nve "mdy" #'elixir-mix-dialyzer
       :desc "mix deps.compile" :nve "mDc" #'elixir-mix-deps-compile
