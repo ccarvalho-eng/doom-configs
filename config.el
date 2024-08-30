@@ -380,12 +380,14 @@
   '(org-level-2 :height 0.95)
   '(org-level-3 :height 0.9))
 
+;; Enable clocking and store clock data in the LOGBOOK drawer
+(setq org-clock-into-drawer "LOGBOOK")
+
 ;; Log task state changes with a timestamp and note
 (setq org-log-done 'time)  ; Add a timestamp when a task is marked DONE
 (setq org-log-into-drawer t)  ; Always use the LOGBOOK drawer for notes
 
 ;; Log all state changes with a note
-(setq org-log-done 'note)  ; Prompt for a note when a task is marked DONE
 (setq org-log-reschedule 'note) ; Prompt for a note when a task is rescheduled
 (setq org-log-redeadline 'note) ; Prompt for a note when a task's deadline is changed
 (setq org-log-state-notes-into-drawer t) ; Store state change notes in a drawer
