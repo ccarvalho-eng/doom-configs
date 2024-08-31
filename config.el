@@ -158,33 +158,14 @@
   (setq org-journal-dir my-journal-directory
         org-journal-date-format "%a %e %b, %Y"))
 
-;; Agenda configuration
-(setq org-agenda-include-diary t)
-
-(defun find-org-files-recursively (directory)
-  "Find all .org files recursively within DIRECTORY."
-  (directory-files-recursively directory "\\.org$"))
-
-(defun update-org-agenda-files ()
-  "Update org-agenda-files with all .org files in org and journal directories."
-  (interactive)
-  (setq org-agenda-files
-        (append
-         (find-org-files-recursively my-org-directory))))
-
-;; Initialize org-agenda-files
-(update-org-agenda-files)
-
-;; Automatically update org-agenda-files every 5 minutes
-(run-with-timer 0 300 'update-org-agenda-files)
+;; Add template loading function
+(defun org-journal-load-template (type)
+  "Load an Org-mode template for the given TYPE of journal entry."
+  (let ((template-file (expand-file-name (concat type ".org") my-templates-directory)))
+    (when (file-exists-p template-file)
+      (insert-file-contents template-file))))
 
 ;; Journal functions
-(defun org-journal-refresh-agenda-list ()
-  "Refresh the org-agenda-files list and reload the agenda."
-  (interactive)
-  (update-org-agenda-files)
-  (org-agenda-redo-all))
-
 (defun org-journal-create-entry (period)
   "Create a new journal entry for the given PERIOD."
   (let* ((config (cdr (assoc period
@@ -203,12 +184,25 @@
                                (yearly . ((dir . "yearly")
                                           (format . "%Y.org")
                                           (date-format . "%Y")))))))
-         (dir (concat my-journal-directory (alist-get 'dir config))))
+         (base-dir (concat my-journal-directory (alist-get 'dir config)))
+         (file-format (alist-get 'format config))
+         (date-format (alist-get 'date-format config))
+         (current-time (current-time))
+         (dir (if (eq period 'daily)
+                  (concat base-dir "/" (format-time-string "%Y-%m" current-time))
+                base-dir)))
+    ;; Ensure the directory exists
+    (unless (file-exists-p dir)
+      (make-directory dir t))
+    ;; Set org-journal variables for this entry
     (setq org-journal-dir dir
-          org-journal-file-format (alist-get 'format config)
-          org-journal-date-format (alist-get 'date-format config))
+          org-journal-file-format file-format
+          org-journal-date-format date-format)
+    ;; Create the new entry
     (org-journal-new-entry nil)
+    ;; Load the template
     (org-journal-load-template (symbol-name period))
+    ;; Refresh the agenda list
     (org-journal-refresh-agenda-list)))
 
 ;; Add a hook to refresh agenda files after saving an org file
