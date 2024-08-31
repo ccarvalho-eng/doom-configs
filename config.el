@@ -151,7 +151,7 @@
 ;; Set org-related directories
 (setq org-directory my-org-directory)
 (setq org-default-notes-file my-org-directory)
-(setq org-roam-directory (concat my-org-directory "train-of-thought"))
+(setq org-roam-directory (concat my-org-directory "notes"))
 
 ;; Journal configuration
 (after! org-journal
