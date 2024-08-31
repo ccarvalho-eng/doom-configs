@@ -185,29 +185,40 @@
   (update-org-agenda-files)
   (org-agenda-redo-all))
 
+(defun org-journal-load-template (period)
+  "Load the template for the given PERIOD."
+  (let ((template-file (concat my-templates-directory period ".org")))
+    (when (file-exists-p template-file)
+      (insert-file-contents template-file))))
+
 (defun org-journal-create-entry (period)
   "Create a new journal entry for the given PERIOD."
   (let* ((config (cdr (assoc period
-                             '((daily . ((dir . "daily")
+                             '((daily . ((dir . "daily/%Y-%m")
                                          (format . "%Y-%m-%d.org")
                                          (date-format . "%a %e %b, %Y")))
-                               (weekly . ((dir . "weekly")
+                               (weekly . ((dir . "weekly/%Y")
                                           (format . "%Y-W%V.org")
                                           (date-format . "Week %V, %Y")))
-                               (monthly . ((dir . "monthly")
+                               (monthly . ((dir . "monthly/%Y")
                                            (format . "%Y-%m.org")
                                            (date-format . "%B %Y")))
-                               (quarterly . ((dir . "quarterly")
+                               (quarterly . ((dir . "quarterly/%Y")
                                              (format . "%Y-Q%q.org")
                                              (date-format . "Quarter %q, %Y")))
                                (yearly . ((dir . "yearly")
                                           (format . "%Y.org")
                                           (date-format . "%Y")))))))
-         (dir (concat my-journal-directory (alist-get 'dir config))))
+         (date (org-read-date nil nil ""))
+         (time (org-time-string-to-time date))
+         (dir (concat my-journal-directory
+                      (format-time-string (alist-get 'dir config) time))))
+    (unless (file-exists-p dir)
+      (make-directory dir t))
     (setq org-journal-dir dir
           org-journal-file-format (alist-get 'format config)
           org-journal-date-format (alist-get 'date-format config))
-    (org-journal-new-entry nil)
+    (org-journal-new-entry t time)
     (org-journal-load-template (symbol-name period))
     (org-journal-refresh-agenda-list)))
 
