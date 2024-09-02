@@ -187,17 +187,24 @@
 
 (defun org-journal-load-template (period)
   "Load the template for the given PERIOD."
-  (let ((template-file (concat my-templates-directory period ".org")))
+  (let ((template-file (expand-file-name (concat (symbol-name period) ".org") my-templates-directory)))
     (when (file-exists-p template-file)
-      (insert-file-contents template-file))))
+      (insert-file-contents template-file)
+      (goto-char (point-max)))))
+
+(after! org-journal
+  (setq org-journal-dir my-journal-directory
+        org-journal-date-format "%a %e %b, %Y"  ; Default format for daily entries
+        org-journal-file-format "%Y-%m-%d.org"  ; Default format for daily entries
+        org-journal-file-type 'daily))  ; Default to daily entries
 
 (defun org-journal-create-entry (period)
   "Create a new journal entry for the given PERIOD."
   (let* ((config (cdr (assoc period
-                             '((daily . ((dir . "daily/%Y-%m")
+                             '((daily . ((dir . "daily/%Y/%Y-%m")
                                          (format . "%Y-%m-%d.org")
                                          (date-format . "%a %e %b, %Y")))
-                               (weekly . ((dir . "weekly/%Y")
+                               (weekly . ((dir . "weekly/%Y/%Y-%m")
                                           (format . "%Y-W%V.org")
                                           (date-format . "Week %V, %Y")))
                                (monthly . ((dir . "monthly/%Y")
@@ -205,7 +212,7 @@
                                            (date-format . "%B %Y")))
                                (quarterly . ((dir . "quarterly/%Y")
                                              (format . "%Y-Q%q.org")
-                                             (date-format . "Quarter %q, %Y")))
+                                             (date-format . "Q%q %Y")))
                                (yearly . ((dir . "yearly")
                                           (format . "%Y.org")
                                           (date-format . "%Y")))))))
@@ -215,12 +222,22 @@
                       (format-time-string (alist-get 'dir config) time))))
     (unless (file-exists-p dir)
       (make-directory dir t))
-    (setq org-journal-dir dir
-          org-journal-file-format (alist-get 'format config)
-          org-journal-date-format (alist-get 'date-format config))
-    (org-journal-new-entry t time)
-    (org-journal-load-template (symbol-name period))
-    (org-journal-refresh-agenda-list)))
+    (let ((org-journal-dir dir)
+          (org-journal-file-format (alist-get 'format config))
+          (org-journal-date-format (alist-get 'date-format config))
+          (org-journal-file-type period))
+      (org-journal-new-entry t time)
+      (save-excursion
+        (goto-char (point-min))
+        (when (re-search-forward "^\\* " nil t)
+          (let ((headline-end (line-end-position)))
+            (forward-line)
+            (when (looking-at ":PROPERTIES:")
+              (re-search-forward ":END:" nil t)
+              (forward-line))
+            (insert "\n")
+            (org-journal-load-template period))))
+      (org-journal-refresh-agenda-list))))
 
 ;; Add a hook to refresh agenda files after saving an org file
 (add-hook 'after-save-hook
