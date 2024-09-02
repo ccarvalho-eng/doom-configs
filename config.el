@@ -230,16 +230,23 @@
       (save-excursion
         (goto-char (point-min))
         (when (re-search-forward "^\\* " nil t)
-          (let ((headline-end (line-end-position)))
-            (forward-line)
-            (insert "\n:PROPERTIES:\n:CREATED:  " (format-time-string "%Y%m%d" time) "\n:END:\n\n")
-            (let ((start-point (point)))
-              (org-journal-load-template period)
-              (goto-char start-point)
-              (while (not (eobp))
-                (when (looking-at "^\\*")
-                  (insert "*"))
-                (forward-line 1))))))
+          (forward-line)
+          (insert ":PROPERTIES:\n"
+                  ":CREATED: " (format-time-string "[%Y-%m-%d %a %H:%M]" time) "\n"
+                  ":TAGS: " (symbol-name period) "\n"
+                  ":END:\n\n")
+          (let ((start-point (point)))
+            (org-journal-load-template period)
+            (goto-char start-point)
+            (while (not (eobp))
+              (cond
+               ((looking-at "^\\* ")
+                (replace-match "** "))
+               ((looking-at "^\\*\\* ")
+                (replace-match "*** "))
+               ((looking-at "^\\*\\*\\* ")
+                (replace-match "**** ")))
+              (forward-line 1)))))
       (org-journal-refresh-agenda-list))))
 
 ;; Add a hook to refresh agenda files after saving an org file
