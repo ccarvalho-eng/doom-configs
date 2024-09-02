@@ -233,7 +233,7 @@
           (forward-line)
           (insert ":PROPERTIES:\n"
                   ":CREATED: " (format-time-string "[%Y-%m-%d %a %H:%M]" time) "\n"
-                  ":TAGS: " (symbol-name period) "\n"
+                  ":+TAGS: " (symbol-name period) "\n"
                   ":END:\n\n")
           (let ((start-point (point)))
             (org-journal-load-template period)
