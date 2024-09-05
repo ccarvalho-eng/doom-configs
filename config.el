@@ -397,3 +397,13 @@
 (global-auto-revert-mode t)
 (delete-selection-mode t)
 (global-subword-mode t)
+
+;; Export org table to CSV
+(defun my/org-table-export-csv ()
+  (interactive)
+  (org-table-export (read-file-name "Export table to CSV file: ") "orgtbl-to-csv"))
+
+(map! :map org-mode-map
+      :leader
+      :desc "Export table to CSV"
+      "m T c" #'my/org-table-export-csv)
