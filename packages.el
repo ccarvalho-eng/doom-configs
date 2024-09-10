@@ -13,7 +13,6 @@
 (package! lsp-ui)
 (package! imenu-list)
 (package! imenu-anywhere)
-(package! catppuccin-theme)
 (package! org-roam-ui)
 (package! github-browse-file)
 (package! flycheck-credo)

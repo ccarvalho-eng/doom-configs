@@ -17,8 +17,7 @@
 ;;;; UI Configuration
 
 ;; Theme
-(setq doom-theme 'catppuccin)
-(setq catppuccin-flavor 'macchiato)
+(setq doom-theme 'doom-one)
 
 ;; Font
 (setq doom-font (font-spec :family "MonacoB2" :size 11))
