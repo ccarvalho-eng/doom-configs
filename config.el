@@ -425,3 +425,4 @@
   (add-to-list 'copilot-indentation-alist '(text-mode . 2))
   (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
   (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
+
