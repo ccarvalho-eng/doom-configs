@@ -20,7 +20,7 @@
 (setq doom-theme 'doom-one)
 
 ;; Font
-(setq doom-font (font-spec :family "MonacoB2" :size 11))
+(setq doom-font (font-spec :size 11))
 
 ;; Italic comments and documentation
 (custom-set-faces!
@@ -32,7 +32,7 @@
 
 ;; Default frame size
 (add-to-list 'default-frame-alist '(width . 180))
-(add-to-list 'default-frame-alist '(height . 60))
+(add-to-list 'default-frame-alist '(height . 70))
 
 ;;;; LSP Configuration
 
