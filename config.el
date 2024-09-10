@@ -18,7 +18,7 @@
 
 ;; Theme
 (setq doom-theme 'catppuccin)
-(setq catppuccin-flavor 'frappe)
+(setq catppuccin-flavor 'macchiato)
 
 ;; Font
 (setq doom-font (font-spec :family "MonacoB2" :size 11))
