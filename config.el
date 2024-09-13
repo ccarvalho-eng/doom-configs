@@ -42,6 +42,7 @@
 
 ;; Line numbers
 (setq display-line-numbers-type 'relative)
+(global-display-line-numbers-mode t)
 
 ;; Default frame size
 (add-to-list 'default-frame-alist '(width . 180))
