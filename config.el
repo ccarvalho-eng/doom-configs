@@ -17,7 +17,20 @@
 ;;;; UI Configuration
 
 ;; Theme
-(setq doom-theme 'doom-solarized-dark)
+(defun set-solarized-theme-based-on-time ()
+  "Set the theme to solarized light or dark depending on the time of day."
+  (let* ((hour (string-to-number (format-time-string "%H")))
+         (day-theme 'doom-solarized-light)
+         (night-theme 'doom-solarized-dark))
+    (if (and (>= hour 7) (< hour 19))
+        (load-theme day-theme t)
+      (load-theme night-theme t))))
+
+;; Set initial theme
+(set-solarized-theme-based-on-time)
+
+;; Recheck and update theme every hour
+(run-at-time "1 hour" 3600 'set-solarized-theme-based-on-time)
 
 ;; Font
 (setq doom-font (font-spec :size 11))
