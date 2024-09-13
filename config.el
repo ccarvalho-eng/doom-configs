@@ -17,7 +17,7 @@
 ;;;; UI Configuration
 
 ;; Theme
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-solarized-dark)
 
 ;; Font
 (setq doom-font (font-spec :size 11))
