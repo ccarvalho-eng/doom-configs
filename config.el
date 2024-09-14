@@ -153,6 +153,9 @@
 
 ;;;; Org Mode Configuration
 
+;; Set calendar week start day to Sunday
+(setq calendar-week-start-day 0)
+
 ;; Define directory paths
 (defvar my-org-directory "~/Library/Mobile Documents/com~apple~CloudDocs/org-notes/"
   "The directory where I store my org files.")
