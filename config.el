@@ -22,7 +22,7 @@
   (let* ((hour (string-to-number (format-time-string "%H")))
          (day-theme 'doom-solarized-light)
          (night-theme 'doom-solarized-dark))
-    (if (and (>= hour 6) (< hour 18))
+    (if (and (>= hour 7) (< hour 18))
         (load-theme day-theme t)
       (load-theme night-theme t))))
 
