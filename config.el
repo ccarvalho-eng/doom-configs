@@ -442,3 +442,22 @@
   (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
   (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
 
+;; LilyPond configuration
+(defun run-lilypond-on-current-file ()
+  "Run LilyPond on the current file and export it as a PDF."
+  (interactive)
+  (let* ((file (buffer-file-name))
+         (output-dir (file-name-directory file))
+         (base-name (file-name-base file))
+         (output-file (expand-file-name (concat base-name ".pdf") output-dir))
+         (command (format "lilypond -o \"%s\" \"%s\"" (file-name-sans-extension output-file) file))
+         (compilation-buffer-name-function
+          (lambda (mode) "*LilyPond Output*")))
+    (compile command)
+    (message "LilyPond command executed: %s" command)
+    (unless (get-buffer "*LilyPond Output*")
+      (pop-to-buffer "*LilyPond Output*"))))
+
+(map! :leader
+      :desc "Run LilyPond on current file"
+      "t l" #'run-lilypond-on-current-file)
