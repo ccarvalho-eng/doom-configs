@@ -16,22 +16,6 @@
 
 ;;;; UI Configuration
 
-;; Theme
-(defun set-solarized-theme-based-on-time ()
-  "Set the theme to solarized light or dark depending on the time of day."
-  (let* ((hour (string-to-number (format-time-string "%H")))
-         (day-theme 'doom-solarized-light)
-         (night-theme 'doom-solarized-dark))
-    (if (and (>= hour 7) (< hour 18))
-        (load-theme day-theme t)
-      (load-theme night-theme t))))
-
-;; Set initial theme
-(set-solarized-theme-based-on-time)
-
-;; Recheck and update theme every hour
-(run-at-time "1 hour" 3600 'set-solarized-theme-based-on-time)
-
 ;; Font
 (setq doom-font (font-spec :size 11))
 
@@ -158,21 +142,23 @@
   "The directory where I store my org files.")
 (defvar my-journal-directory (concat my-org-directory "journal/")
   "The directory where I store my journal files.")
-(defvar my-templates-directory (concat my-org-directory "templates/")
-  "The directory where I store my templates.")
 
 ;; Set org-related directories
 (setq org-directory my-org-directory)
 (setq org-default-notes-file my-org-directory)
-(setq org-roam-directory (concat my-org-directory "notes"))
 
 ;; Journal configuration
 (after! org-journal
   (setq org-journal-dir my-journal-directory
-        org-journal-date-format "%a %e %b, %Y"))
+        org-journal-date-format "%a %e %b, %Y"
+        org-journal-file-format "%Y-%m-%d.org"
+        org-journal-file-type 'daily))
 
 ;; Agenda configuration
 (setq org-agenda-include-diary t)
+
+;; Set up org-agenda-files to include both org directory and journal directory
+(setq org-agenda-files (list org-directory my-journal-directory))
 
 (defun find-org-files-recursively (directory)
   "Find all .org files recursively within DIRECTORY."
@@ -187,123 +173,6 @@
 
 ;; Initialize org-agenda-files
 (update-org-agenda-files)
-
-;; Automatically update org-agenda-files every 5 minutes
-(run-with-timer 0 300 'update-org-agenda-files)
-
-;; Journal functions
-(defun org-journal-refresh-agenda-list ()
-  "Refresh the org-agenda-files list and reload the agenda."
-  (interactive)
-  (update-org-agenda-files)
-  (org-agenda-redo-all))
-
-(defun org-journal-load-template (period)
-  "Load the template for the given PERIOD."
-  (let ((template-file (expand-file-name (concat (symbol-name period) ".org") my-templates-directory)))
-    (when (file-exists-p template-file)
-      (insert-file-contents template-file)
-      (goto-char (point-max)))))
-
-(after! org-journal
-  (setq org-journal-dir my-journal-directory
-        org-journal-date-format "%a %e %b, %Y"  ; Default format for daily entries
-        org-journal-file-format "%Y-%m-%d.org"  ; Default format for daily entries
-        org-journal-file-type 'daily))  ; Default to daily entries
-
-(defun org-journal-create-entry (period)
-  "Create a new journal entry for the given PERIOD."
-  (let* ((config (cdr (assoc period
-                             '((daily . ((dir . "daily/%Y/%Y-%m")
-                                         (format . "%Y-%m-%d.org")
-                                         (date-format . "%a %e %b, %Y")))
-                               (weekly . ((dir . "weekly/%Y/%Y-%m")
-                                          (format . "%Y-W%V.org")
-                                          (date-format . "Week %V, %Y")))
-                               (monthly . ((dir . "monthly/%Y")
-                                           (format . "%Y-%m.org")
-                                           (date-format . "%B %Y")))
-                               (quarterly . ((dir . "quarterly/%Y")
-                                             (format . "%Y-Q%q.org")
-                                             (date-format . "Q%q %Y")))
-                               (yearly . ((dir . "yearly")
-                                          (format . "%Y.org")
-                                          (date-format . "%Y")))))))
-         (date (org-read-date nil nil ""))
-         (time (org-time-string-to-time date))
-         (dir (concat my-journal-directory
-                      (format-time-string (alist-get 'dir config) time))))
-    (unless (file-exists-p dir)
-      (make-directory dir t))
-    (let ((org-journal-dir dir)
-          (org-journal-file-format (alist-get 'format config))
-          (org-journal-date-format (alist-get 'date-format config))
-          (org-journal-file-type period))
-      (org-journal-new-entry t time)
-      (save-excursion
-        (goto-char (point-min))
-        (when (re-search-forward "^\\* " nil t)
-          (forward-line)
-          (insert ":PROPERTIES:\n"
-                  ":CREATED: " (format-time-string "[%Y-%m-%d %a %H:%M]" time) "\n"
-                  ":+TAGS: " (symbol-name period) "\n"
-                  ":END:\n\n")
-          (let ((start-point (point)))
-            (org-journal-load-template period)
-            (goto-char start-point)
-            (while (not (eobp))
-              (cond
-               ((looking-at "^\\* ")
-                (replace-match "** "))
-               ((looking-at "^\\*\\* ")
-                (replace-match "*** "))
-               ((looking-at "^\\*\\*\\* ")
-                (replace-match "**** ")))
-              (forward-line 1)))))
-      (org-journal-refresh-agenda-list))))
-
-;; Add a hook to refresh agenda files after saving an org file
-(add-hook 'after-save-hook
-          (lambda ()
-            (when (eq major-mode 'org-mode)
-              (org-journal-refresh-agenda-list))))
-
-;; Keybinding to manually refresh agenda files
-(map! :leader
-      :desc "Refresh org agenda files" "o a r" #'org-journal-refresh-agenda-list)
-
-(defun org-journal-daily-entry ()
-  "Create a new daily journal entry."
-  (interactive)
-  (org-journal-create-entry 'daily))
-
-(defun org-journal-weekly-entry ()
-  "Create a new weekly journal entry."
-  (interactive)
-  (org-journal-create-entry 'weekly))
-
-(defun org-journal-monthly-entry ()
-  "Create a new monthly journal entry."
-  (interactive)
-  (org-journal-create-entry 'monthly))
-
-(defun org-journal-quarterly-entry ()
-  "Create a new quarterly journal entry."
-  (interactive)
-  (org-journal-create-entry 'quarterly))
-
-(defun org-journal-yearly-entry ()
-  "Create a new yearly journal entry."
-  (interactive)
-  (org-journal-create-entry 'yearly))
-
-;; Journal keybindings
-(map! :leader
-      :desc "Daily journal entry" "n j d" #'org-journal-daily-entry
-      :desc "Weekly journal entry" "n j w" #'org-journal-weekly-entry
-      :desc "Monthly journal entry" "n j m" #'org-journal-monthly-entry
-      :desc "Quarterly journal entry" "n j q" #'org-journal-quarterly-entry
-      :desc "Yearly journal entry" "n j y" #'org-journal-yearly-entry)
 
 ;; Org UI customization
 (custom-set-faces!
