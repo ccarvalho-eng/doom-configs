@@ -7,17 +7,13 @@
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
-;;;; Project Management
-(use-package! projectile
-  :config
-  (setq projectile-project-search-path '("~/Projects")
-        projectile-indexing-method 'hybrid
-        projectile-enable-caching t))
-
 ;;;; UI Configuration
 
 ;; Font
-(setq doom-font (font-spec :size 11))
+(setq doom-font (font-spec :family "JetBrains Mono" :size 12))
+
+;; Theme
+(setq doom-theme 'doom-one)
 
 ;; Italic comments and documentation
 (custom-set-faces!
@@ -29,14 +25,40 @@
 (global-display-line-numbers-mode t)
 
 ;; Default frame size
-(add-to-list 'default-frame-alist '(width . 180))
-(add-to-list 'default-frame-alist '(height . 70))
+(add-to-list 'default-frame-alist '(width . 185))
+(add-to-list 'default-frame-alist '(height . 58))
+
+;;;; Editor Configuration
+
+;; Text Wrapping
+(setq-default fill-column 80)
+(add-hook 'text-mode-hook #'auto-fill-mode)
+(global-visual-line-mode 1)
+
+;; Misc editor settings
+(setq auto-save-timeout 15
+      make-backup-files nil
+      create-lockfiles nil)
+
+(global-auto-revert-mode t)
+(delete-selection-mode t)
+(global-subword-mode t)
+
+;;;; Project Management
+
+(use-package! projectile
+  :config
+  (setq projectile-project-search-path '("~/Projects")
+        projectile-indexing-method 'hybrid
+        projectile-enable-caching t))
 
 ;;;; LSP Configuration
 
 (use-package! lsp-mode
   :ensure t
-  :hook (elixir-ts-mode . lsp)
+  :hook ((elixir-ts-mode . lsp)
+         (web-mode . lsp)
+         (typescript-mode . lsp))
   :commands lsp
   :config
   (lsp-register-client
@@ -86,40 +108,18 @@
   (insert " |> dbg()")
   (evil-normal-state))
 
-(defun elixir-mix-credo ()
+(defun elixir-mix-command (command)
   (interactive)
   (let ((default-directory (projectile-project-root)))
-    (compile "mix credo")))
+    (compile (concat "mix " command))))
 
-(defun elixir-mix-dialyzer ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix dialyzer")))
-
-(defun elixir-mix-deps-compile ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix deps.compile")))
-
-(defun elixir-mix-deps-get ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix deps.get")))
-
-(defun elixir-mix-ecto-create ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix ecto.create")))
-
-(defun elixir-mix-ecto-migrate ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix ecto.migrate")))
-
-(defun elixir-mix-ecto-rollback ()
-  (interactive)
-  (let ((default-directory (projectile-project-root)))
-    (compile "mix ecto.rollback")))
+(defun elixir-mix-credo () (interactive) (elixir-mix-command "credo"))
+(defun elixir-mix-dialyzer () (interactive) (elixir-mix-command "dialyzer"))
+(defun elixir-mix-deps-compile () (interactive) (elixir-mix-command "deps.compile"))
+(defun elixir-mix-deps-get () (interactive) (elixir-mix-command "deps.get"))
+(defun elixir-mix-ecto-create () (interactive) (elixir-mix-command "ecto.create"))
+(defun elixir-mix-ecto-migrate () (interactive) (elixir-mix-command "ecto.migrate"))
+(defun elixir-mix-ecto-rollback () (interactive) (elixir-mix-command "ecto.rollback"))
 
 ;; Elixir keybindings
 (map! :mode elixir-ts-mode
@@ -144,41 +144,45 @@
   "The directory where I store my journal files.")
 
 ;; Set org-related directories
-(setq org-directory my-org-directory)
-(setq org-default-notes-file my-org-directory)
+(setq org-directory my-org-directory
+      org-default-notes-file (concat org-directory "notes.org"))
 
 ;; Journal configuration
-(after! org-journal
+(use-package! org-journal
+  :config
   (setq org-journal-dir my-journal-directory
-        org-journal-date-format "%a %e %b, %Y"
+        org-journal-date-format "%A, %d %B %Y"
         org-journal-file-format "%Y-%m-%d.org"
         org-journal-file-type 'daily))
 
 ;; Agenda configuration
-(setq org-agenda-include-diary t)
+(setq org-agenda-include-diary t
+      org-agenda-start-on-weekday nil  ; Start agenda on current day
+      org-agenda-span 14               ; Show two weeks in agenda
+      org-agenda-start-day "-1d")      ; Start agenda from yesterday
 
-;; Set up org-agenda-files to include both org directory and journal directory
-(setq org-agenda-files (list org-directory my-journal-directory))
-
+;; Function to find .org files recursively
 (defun find-org-files-recursively (directory)
   "Find all .org files recursively within DIRECTORY."
   (directory-files-recursively directory "\\.org$"))
 
+;; Function to update org-agenda-files
 (defun update-org-agenda-files ()
   "Update org-agenda-files with all .org files in org and journal directories."
   (interactive)
   (setq org-agenda-files
         (append
-         (find-org-files-recursively my-org-directory))))
+         (find-org-files-recursively my-org-directory)
+         (find-org-files-recursively my-journal-directory))))
 
 ;; Initialize org-agenda-files
 (update-org-agenda-files)
 
 ;; Org UI customization
 (custom-set-faces!
-  '(org-level-1 :height 1.0)
-  '(org-level-2 :height 0.95)
-  '(org-level-3 :height 0.9))
+  '(org-level-1 :height 1.2 :weight bold)
+  '(org-level-2 :height 1.1 :weight semi-bold)
+  '(org-level-3 :height 1.05 :weight normal))
 
 ;; Org clock and logging configuration
 (setq org-clock-into-drawer "LOGBOOK"
@@ -188,11 +192,39 @@
       org-log-redeadline 'note
       org-log-state-notes-into-drawer t)
 
-;;;; Text Wrapping
+;; Capture templates
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree org-default-notes-file)
+         "* %?\nEntered on %U\n  %i\n  %a")))
 
-(setq-default fill-column 80)
-(add-hook 'text-mode-hook #'auto-fill-mode)
-(global-visual-line-mode 1)
+;; Org babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (python . t)
+   (shell . t)))
+
+;; Org export settings
+(setq org-export-with-toc t
+      org-export-with-author t
+      org-export-with-creator t
+      org-export-with-email t)
+
+;; Enable org-indent-mode and visual-line-mode by default
+(add-hook 'org-mode-hook 'org-indent-mode)
+(add-hook 'org-mode-hook 'visual-line-mode)
+
+;; Export org table to CSV
+(defun my/org-table-export-csv ()
+  (interactive)
+  (org-table-export (read-file-name "Export table to CSV file: ") "orgtbl-to-csv"))
+
+(map! :map org-mode-map
+      :leader
+      :desc "Export table to CSV"
+      "m T c" #'my/org-table-export-csv)
 
 ;;;; MacOS Configuration
 
@@ -213,9 +245,15 @@
   :after lsp-mode
   :config
   (setq lsp-enable-folding t)
-  (add-hook! 'lsp-after-open-hook #'lsp-origami-try-enable))
+  (add-hook 'lsp-after-open-hook #'lsp-origami-try-enable))
 
-;;;; Miscellaneous
+(use-package! rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package! yaml-mode
+  :mode "\\.ya?ml\\'")
+
+;;;; Keybindings
 
 ;; Multiple cursors keybindings
 (map! :leader
@@ -225,33 +263,11 @@
        :desc "Mark all in region" "r" #'mc/mark-all-in-region))
 
 ;; Org-roam-ui keybinding
-(global-set-key (kbd "C-c r u") 'org-roam-ui-open)
+(map! :leader
+      :desc "Open Org Roam UI"
+      "n r u" #'org-roam-ui-open)
 
-;;; Company (autocompletion)
-(after! company
-  (setq company-idle-delay 0.1
-        company-minimum-prefix-length 1)
-  (add-hook 'after-init-hook 'global-company-mode))
-
-;;; Flycheck (syntax checking)
-(after! flycheck
-  (setq flycheck-check-syntax-automatically '(save mode-enabled)
-        flycheck-idle-change-delay 0.1))
-
-;;; Which-key (key binding hints)
-(after! which-key
-  (setq which-key-idle-delay 0.5
-        which-key-idle-secondary-delay 0.05))
-
-;;; Dired (file management)
-(after! dired
-  (setq dired-dwim-target t))
-
-;;; Rainbow delimiters (colorize nested parentheses)
-(use-package! rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-;;; Language-specific configurations
+;;;; Language-specific configurations
 
 ;; JavaScript/TypeScript
 (after! typescript-mode
@@ -263,32 +279,36 @@
         web-mode-css-indent-offset 2
         web-mode-code-indent-offset 2))
 
-;; YAML
-(use-package! yaml-mode
-  :mode "\\.ya?ml\\'")
+;;;; Completion and Syntax Checking
 
-;;; Performance tweaks
+;; Company (autocompletion)
+(after! company
+  (setq company-idle-delay 0.1
+        company-minimum-prefix-length 1)
+  (add-hook 'after-init-hook 'global-company-mode))
+
+;; Flycheck (syntax checking)
+(after! flycheck
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)
+        flycheck-idle-change-delay 0.1))
+
+;; Which-key (key binding hints)
+(after! which-key
+  (setq which-key-idle-delay 0.5
+        which-key-idle-secondary-delay 0.05))
+
+;;;; File Management
+
+;; Dired (file management)
+(after! dired
+  (setq dired-dwim-target t))
+
+;;;; Performance tweaks
+
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
 
-;;; Miscellaneous
-(setq auto-save-timeout 15
-      make-backup-files nil
-      create-lockfiles nil)
-
-(global-auto-revert-mode t)
-(delete-selection-mode t)
-(global-subword-mode t)
-
-;; Export org table to CSV
-(defun my/org-table-export-csv ()
-  (interactive)
-  (org-table-export (read-file-name "Export table to CSV file: ") "orgtbl-to-csv"))
-
-(map! :map org-mode-map
-      :leader
-      :desc "Export table to CSV"
-      "m T c" #'my/org-table-export-csv)
+;;;; AI Assistance
 
 ;; Copilot configuration
 (use-package! copilot
@@ -302,13 +322,15 @@
               ("C-p" . 'copilot-previous-completion))
 
   :config
-  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
+  (setq copilot-indent-offset-alist
+        '((prog-mode . 2)
+          (org-mode . 2)
+          (text-mode . 2)
+          (closure-mode . 2)
+          (emacs-lisp-mode . 2))))
 
-;; LilyPond configuration
+;;;; LilyPond Configuration
+
 (defun run-lilypond-on-current-file ()
   "Run LilyPond on the current file and export it as a PDF."
   (interactive)
