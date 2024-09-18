@@ -151,7 +151,7 @@
 (use-package! org-journal
   :config
   (setq org-journal-dir my-journal-directory
-        org-journal-date-format "%A, %d %B %Y"
+        org-journal-date-format "%a, %d %B %Y"
         org-journal-file-format "%Y-%m-%d.org"
         org-journal-file-type 'daily))
 
