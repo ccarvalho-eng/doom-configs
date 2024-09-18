@@ -349,3 +349,16 @@
 (map! :leader
       :desc "Run LilyPond on current file"
       "t l" #'run-lilypond-on-current-file)
+
+;;;; GitHub Integration
+(use-package! github-browse-file
+  :config
+  (defun browse-file-at-line ()
+    "Browse the current file on GitHub including the current line."
+    (interactive)
+    (let ((github-browse-file-show-line-at-point t))
+      (github-browse-file))))
+
+(map! :leader
+      :desc "Browse file at current line on GitHub"
+      "g h" #'browse-file-at-line)
