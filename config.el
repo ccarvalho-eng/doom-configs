@@ -9,12 +9,6 @@
 
 ;;;; UI Configuration
 
-;; Font
-(setq doom-font (font-spec :family "JetBrains Mono" :size 12))
-
-;; Theme
-(setq doom-theme 'doom-one)
-
 ;; Italic comments and documentation
 (custom-set-faces!
   `(font-lock-comment-face :slant italic)
@@ -26,7 +20,7 @@
 
 ;; Default frame size
 (add-to-list 'default-frame-alist '(width . 185))
-(add-to-list 'default-frame-alist '(height . 58))
+(add-to-list 'default-frame-alist '(height . 65))
 
 ;;;; Editor Configuration
 
