@@ -178,6 +178,18 @@
 ;; Initialize org-agenda-files
 (update-org-agenda-files)
 
+;; Org-habit configuration
+(after! org (add-to-list 'org-modules 'org-habit))
+(setq org-habit-graph-column 50         ;; Adjust column for graph display
+      org-habit-preceding-days 21       ;; Number of days before today to show in graph
+      org-habit-following-days 7        ;; Number of future days to show in graph
+      org-habit-show-all-today t)       ;; Ensure all habits scheduled for today are shown
+
+(map! :map org-agenda-mode-map
+      :leader
+      :desc "Toggle habits" "h t" #'org-habit-stats-view-habit-at-point
+      :desc "Toggle habits in agenda" "h T" #'org-habit-stats-view-habit-at-point-agenda)
+
 ;; Org UI customization
 (custom-set-faces!
   '(org-level-1 :height 1.2 :weight bold)
