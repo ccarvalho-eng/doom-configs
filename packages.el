@@ -16,6 +16,7 @@
 (package! org-roam-ui)
 (package! github-browse-file)
 (package! flycheck-credo)
+(package! org-habit-stats)
 (package! copilot
   :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
 

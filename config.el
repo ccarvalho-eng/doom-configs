@@ -362,3 +362,4 @@
 (map! :leader
       :desc "Browse file at current line on GitHub"
       "g h" #'browse-file-at-line)
+
