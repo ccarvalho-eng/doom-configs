@@ -275,6 +275,22 @@
 
 ;;;; Language-specific configurations
 
+;;;; Gleam Configuration
+(use-package! gleam-ts-mode
+  :config
+  ;; setup formatter to be used by `SPC c f`
+  (after! apheleia
+    (setf (alist-get 'gleam-ts-mode apheleia-mode-alist) 'gleam)
+    (setf (alist-get 'gleam apheleia-formatters) '("gleam" "format" "--stdin"))))
+
+(after! treesit
+  (add-to-list 'auto-mode-alist '("\\.gleam$" . gleam-ts-mode)))
+
+(after! gleam-ts-mode
+  (unless (treesit-language-available-p 'gleam)
+    ;; compile the treesit grammar file the first time
+    (gleam-ts-install-grammar)))
+
 ;; JavaScript/TypeScript
 (after! typescript-mode
   (setq typescript-indent-level 2))
@@ -369,18 +385,3 @@
       :desc "Browse file at current line on GitHub"
       "g h" #'browse-file-at-line)
 
-;;;; Gleam Configuration
-(use-package! gleam-ts-mode
-  :config
-  ;; setup formatter to be used by `SPC c f`
-  (after! apheleia
-    (setf (alist-get 'gleam-ts-mode apheleia-mode-alist) 'gleam)
-    (setf (alist-get 'gleam apheleia-formatters) '("gleam" "format" "--stdin"))))
-
-(after! treesit
-  (add-to-list 'auto-mode-alist '("\\.gleam$" . gleam-ts-mode)))
-
-(after! gleam-ts-mode
-  (unless (treesit-language-available-p 'gleam)
-    ;; compile the treesit grammar file the first time
-    (gleam-ts-install-grammar)))
