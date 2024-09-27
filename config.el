@@ -385,3 +385,5 @@
       :desc "Browse file at current line on GitHub"
       "g h" #'browse-file-at-line)
 
+;;;; Mermaid Configuration
+(setq ob-mermaid-cli-path "/Users/cristianocarvahlo/.asdf/shims/mmdc")
